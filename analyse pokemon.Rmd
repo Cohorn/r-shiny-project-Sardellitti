@@ -1,0 +1,48 @@
+
+---
+title: "Analyse pokemon"
+author: "Nolan, Alexandre, Victor, Corentin"
+output: html_document
+date: '2022-09-07'
+---
+
+
+
+## Introduction
+
+
+Problematical : ...
+
+............................................
+
+```{r echo= FALSE}
+stat <- read.csv("C:/Users/alanendarsa//Downloads/stat.csv", sep=";")
+detientPokemon <- read.csv("C:/Users/alanendarsa/Downloads/detientPokemon.csv", sep=";")
+dresseur <- read.csv("C:/Users/alanendarsa/Downloads/dresseur.csv", sep=";")
+pokemon <- read.csv("C:/Users/alanendarsa/Downloads/pokemon.csv", sep=";")
+estType <- read.csv("C:/Users/alanendarsa/Downloads/Caractéristique.csv", sep=";")
+evolueEN <- read.csv("C:/Users/alanendarsa/Downloads/evolueEn.csv", sep=";")
+```
+
+
+## Statistique général
+
+You can also embed plots, for example:
+```{r echo= FALSE}
+library(dplyr)
+```
+
+
+```{r echo= FALSE}
+stat_type <- stat %>%
+  group_by(Type1) %>%
+  summarise(mean_Total = mean(Total, na.rm=TRUE))
+
+barplot(height = stat_type$mean_Total, las = 2, xlab = "type", main = "Stats total des pokemon selon le type")
+```
+```{r echo= FALSE}
+
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
