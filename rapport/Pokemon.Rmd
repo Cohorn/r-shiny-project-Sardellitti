@@ -1,0 +1,143 @@
+---
+title: "Pokemon"
+output: html_document
+date: '2022-10-17'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Présentation de notre problématique
+
+On s'est posé la question de savoir quel était le pokémon le plus fort et comment on pouvait les analyser avec des statistiques. 
+Pour rendre ce projet viable, on a choisi de séléctionner que les **pokémons de 1ère génération**.
+
+A présent, je vais vous présenter notre base de données sur laquelle on s'appuie afin d'analyser ces pokemons.
+
+
+## Base de donnée
+
+La base de donnée est issue de SQLite, qu'on a crée nous même à partir de fichier csv sur les statistique des pokemons.
+Ces sources sont issues de <https://pokeapi.co/>
+Cette dernière contient 6 tables distincts qui sont liés entre elles.
+Dans un 1er temps voici les librairies qu'on est amené à utiliser :
+```{r importer bdd, echo=FALSE}
+library(DBI)
+library(RSQLite)
+library(dplyr)
+library(fmsb)
+library(DataCombine)
+library(shiny)
+library(shinydashboard)
+library(dplyr)
+dbpokemon <- dbConnect(RSQLite::SQLite(), "C:/Users/Alexandre LANEN/Downloads/pokemon.db")
+pokemon <- dbReadTable(dbpokemon, "pokemon")
+Stat <- dbReadTable(dbpokemon, "Stat")
+Caracteristique <- dbReadTable(dbpokemon, "Caracteristique")
+detientPokemon <- dbReadTable(dbpokemon, "detientPokemon")
+evolueEn <- dbReadTable(dbpokemon, "evolueEN")
+jointure1 <- left_join(pokemon, Stat)
+```
+On a conçu cette base de donnée sur SQLite avec 6 tables réportoriés avec différentes informations.
+Voici le code SQL :
+
+Caracteristique CREATE TABLE "Caracteristique" ( "id_pok" INTEGER,
+"is_legendary" TEXT, "weight_kg" TEXT, "height_m" TEXT )
+id_pok INTEGER "id_pok" INTEGER
+is_legendary TEXT "is_legendary" TEXT
+weight_kg TEXT "weight_kg" TEXT
+height_m TEXT "height_m" TEXT
+Stat CREATE TABLE "Stat" ( "id_pok" INTEGER, "Type1" TEXT, "Type2"
+TEXT, "HP" TEXT, "Attack" TEXT, "Defense" TEXT, "Sp. Atk"
+TEXT, "Sp. Def" TEXT, "Speed" TEXT, "Total" TEXT )
+id_pok INTEGER "id_pok" INTEGER
+Type1 TEXT "Type1" TEXT
+Type2 TEXT "Type2" TEXT
+HP TEXT "HP" TEXT
+Attack TEXT "Attack" TEXT
+Defense TEXT "Defense" TEXT
+Sp. Atk TEXT "Sp. Atk" TEXT
+Sp. Def TEXT "Sp. Def" TEXT
+Speed TEXT "Speed" TEXT
+Total TEXT "Total" TEXT
+detientPokemon CREATE TABLE detientPokemon ( id_dress int NOT NULL, id_pok
+int NOT NULL, lvl_pok int NOT NULL, FOREIGN KEY(id_dress)
+REFERENCES dresseur(id_dress), FOREIGN KEY(id_pok) REFERENCES
+pokemon(id_pok) )
+id_dress int "id_dress" int NOT NULL
+id_pok int "id_pok" int NOT NULL
+lvl_pok int "lvl_pok" int NOT NULL
+evolueEn CREATE TABLE evolueEn ( id_pok_base int NOT NULL, id_pok_evol
+int NOT NULL, lvl_evol_pok int NOT NULL, FOREIGN
+KEY(id_pok_base) REFERENCES pokemon(id_pok), FOREIGN
+KEY(id_pok_evol) REFERENCES pokemon(id_pok) )
+id_pok_base int "id_pok_base" int NOT NULL
+id_pok_evol int "id_pok_evol" int NOT NULL
+lvl_evol_pok int "lvl_evol_pok" int NOT NULL
+pokemon CREATE TABLE pokemon ( id_pok SERIAL NOT NULL, nom_pok
+varchar(10) NOT NULL, PRIMARY KEY(id_pok) )
+id_pok SERIAL "id_pok" SERIAL NOT NULL
+nom_pok varchar(10) "nom_pok" varchar(10) NOT NULL
+Index (
+
+Voici à présent, un résumé du contenu de ces données transférer dans R :
+
+### Table Pokemon :
+
+```{r table pokemon, echo=FALSE}
+
+summary(pokemon)
+```
+### Table Stat :
+```{r table Stat, echo=FALSE}
+
+summary(Stat)
+```
+### Table Caracteristique :
+```{r table Caracteristique, echo=FALSE}
+
+summary(Caracteristique)
+```
+### Table detientPokemon :
+```{r table detientPokemon, echo=FALSE}
+
+summary(detientPokemon)
+```
+
+### Table evolueEn :
+```{r table evolueEn, echo=FALSE}
+summary(evolueEn)
+```
+
+SAUT DE PAGE A FAIRE ICI
+
+## Production et analyse des graphiques :
+
+Voici des graphiques qu'on a été amené à produire :
+```{r histogramme poids, echo=TRUE}
+Caracteristique$weight_kg <- as.numeric(Caracteristique$weight_kg)
+class(Caracteristique$weight_kg)
+hist(x = Caracteristique$weight_kg, breaks = 10, probability = FALSE)
+```
+
+Ici, le graphique nous montre la répartition des pokemon en fonction de leur poids.
+On remarque que la majorité des pokemons sont léger ou lourd mais peu de poids médiant.
+
+
+```{r histogramme taille, echo=TRUE}
+Caracteristique$height_m <- as.numeric(Caracteristique$height_m)
+class(Caracteristique$height_m)
+hist(x = Caracteristique$height_m, breaks = 10, probability = FALSE)
+```
+
+Ici, le graphique nous montre la répartition des pokemon en fonction de leur taille
+On remarque que la majorité des pokemons sont grand ou petit mais peu de taille médiante.
+
+```{r camenbert des types, echo=TRUE}
+tri_a_plat <- table(Stat$Type1)
+pie(x = tri_a_plat, labels = paste(rownames(tri_a_plat),tri_a_plat))
+```
+
+On remarquera ici que les pokemons sont plutôt bien réparti, le typeeau et normal sont les "majoritaires" à l'inverse du type Glace et Spectre qui sont les plus minoritaires.
+
